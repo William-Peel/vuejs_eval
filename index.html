@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Vuejs eval</title>
+    <style>
+        td{
+            padding: 5px;
+        }
+        .button{
+            background-color: beige;
+            padding: 10px 20px;
+        }
+        .odd{
+            background-color: grey;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" style="width: 40%" align="center">
+        <h1>{{ titre }}</h1>
+        <h2>{{ facture }}</h2>
+        <table cellspacing="0">
+            <tr>
+                <th>
+                    {{ id }}
+                </th>
+
+                <th>
+                    {{designation}}
+                </th>
+                <th>
+                    {{qte}}
+                </th>
+                <th>
+                    {{pu_ht}}
+                </th>
+                <th>
+                    {{TVA}}
+                </th>
+                <th>
+                    {{P_HT}}
+                </th>
+                <th>
+                    {{p_ttc}}
+                </th>
+            </tr>
+            <tr class="element" v-for="(item, index) in json" :key="index" :class="index%2 ? 'odd' :  ''">
+                <td>{{json[index].id}}</td>
+                <td><input type="text" v-model="json[index].designation"></td>
+                <td><input type="number" v-model="json[index].qte"></td>
+                <td><input type="text" v-model="json[index].pu_ht"></td>
+                <td><input type="number" v-model="json[index].tva"></td>
+                <td>{{json[index].p_ht}}</td>
+                <td>{{json[index].p_ttc}}</td>
+                <td><span v-on:click="dellDrop(index)">{{effacer}}</span></td>
+            </tr>
+        </table>
+        <button class="button" v-on:click="addPush()">{{ajout}}</button>
+        <div style="float:right">
+            <span>Total ht : {{ totalht }}</span><br>
+            <span>Total Ttc : {{ totalTtc }}</span>
+
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript">
+    let app = new Vue({
+        el: '#app',
+        data: {
+            json: [
+                {
+                    "id": 1,
+                    "designation": "un avion",
+                    "qte": "3",
+                    "pu_ht": 210,
+                    "tva": 20,
+                    "p_ht": 756,
+                    "p_ttc": 907.2
+                },
+                {
+                    "id": 2,
+                    "designation": "un bateau",
+                    "qte": "4",
+                    "pu_ht": 20,
+                    "tva": 0,
+                    "p_ht": 80,
+                    "p_ttc": 80
+                },
+                {
+                    "id": 3,
+                    "designation": "un avion",
+                    "qte": "4",
+                    "pu_ht": 20,
+                    "tva": 0,
+                    "p_ht": 80,
+                    "p_ttc": 80
+                },
+                {
+                    "id": 4,
+                    "designation": "un bateau",
+                    "qte": "4",
+                    "pu_ht": 20,
+                    "tva": 0,
+                    "p_ht": 80,
+                    "p_ttc": 80
+                }
+            ],
+            titre:'Evalutation VueJs',
+            facture:'Facture du 1er Décembre 2019',
+            id:'id',
+            designation:'Designation',
+            qte:'Qte',
+            pu_ht:'Pu ht',
+            TVA:'TVA',
+            P_HT:'P HT',
+            p_ttc:'P Ttc',
+            effacer:'effacer',
+            ajout:'+ Ajouter une valeur',
+            totalht:0,
+            totalTtc:0,
+        },
+        methods:{
+            dellDrop(i){
+                if(this.json.length!=1){
+                    this.json.splice(i,1);
+                    this.calculTotaux();        //Changement de couleur à l'ajout ou à la suppression
+                }
+            },
+            addPush(){
+                this.json.push({"id": this.json[this.json.length-1].id+1,"designation":"","qte":"0","pu_ht":"","tva":"0","p_ht":"","p_ttc":""});
+            },
+            calculTotaux(){
+                this.PrixTTC();
+                this.totalht = 0;
+                this.totalTtc = 0;
+                for(let i = 0;i<this.json.length;i++){
+                    console.log(this.json[i].p_ht);
+                    this.totalht+= this.json[i].p_ht;
+                    this.totalTtc+= this.json[i].p_ttc;
+                }
+
+            },
+            PrixHT(){
+                for(let i=0;i<this.json.length;i++){
+                    this.json[i].p_ht = this.json[i].pu_ht * this.json[i].qte;
+                }
+            },
+            PrixTTC(){
+                this.PrixHT();
+                for(let i=0;i<this.json.length;i++){
+                    this.json[i].p_ttc = this.json[i].p_ht * (1+(this.json[i].tva/100));
+                }
+            }
+
+
+        },
+        watch:{
+            json:{
+                deep:true,
+                handler() {
+                    localStorage.setItem("jsonlist", JSON.stringify(this.json));
+                    this.calculTotaux();
+                }
+            }
+        },
+        mounted(){
+            if(localStorage.getItem('jsonlist')){
+                this.json = JSON.parse(localStorage.getItem('jsonlist'));
+                this.calculTotaux();
+            }
+        }
+
+
+
+    });
+</script>
+</body>
+</html>
